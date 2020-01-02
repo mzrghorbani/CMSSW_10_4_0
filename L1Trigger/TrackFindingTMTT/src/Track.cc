@@ -64,11 +64,11 @@ Track::Track( const Settings* settings, const int& htCell, const Stubs& stubs, c
 Track::Track( const int& mhtCell, const Track* htTrack, const Stubs& stubs, const int& pos ) : settings_( htTrack->settings_ ), parent_( htTrack ), stubs_( stubs ) {
 
   const double&  invPtToDphi   = settings_->invPtToDphi();
-  const int&    numBinsPhi = settings_->mhtNumBinsPhi();
-  const int&    numBinsPt  = settings_->mhtNumBinsPt();
-  const int&    numCells   = settings_->mhtNumCells();
-  const double& baseM      = settings_->baseM();
-  const double& baseC      = settings_->baseC();
+  const int&    numBinsPhi     = settings_->mhtNumBinsPhi();
+  const int&    numBinsPt      = settings_->mhtNumBinsPt();
+  const int&    numCells       = settings_->mhtNumCells();
+  const double& baseM          = settings_->baseM();
+  const double& baseC          = settings_->baseC();
 
   binPhi_ = htTrack->binPhi_;
   binPt_  = htTrack->binPt_;

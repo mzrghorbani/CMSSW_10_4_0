@@ -12,15 +12,13 @@ Created by Maziar Ghorbani - Brunel University on 12/06/19.
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/LRHLS_types.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/LRHLS.h"
 
-#include "ap_int.h"
-
 namespace TMTT {
 
 class LRHLS_top {
 
 public:
 
-    LRHLS_top(const Settings *settings, Data *data);
+    LRHLS_top(const Settings* settings, Data* data);
 
     ~LRHLS_top() {}
 
@@ -28,8 +26,8 @@ public:
 
 public:
 
-    const Settings *settings_;
-    Data *data_;
+    const Settings* settings_;
+    Data* data_;
 
 };
 

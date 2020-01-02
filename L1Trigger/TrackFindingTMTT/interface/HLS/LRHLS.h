@@ -5,6 +5,7 @@ Created by Maziar Ghorbani - Brunel University on 12/06/19.
 #ifndef __LRHLS_H__
 #define __LRHLS_H__
 
+#include "L1Trigger/TrackFindingTMTT/interface/HLS/LRHLS_types.h"
 #include "L1Trigger/TrackFindingTMTT/interface/HLS/LRHLS_top.h"
 
 namespace TMTT {
@@ -13,34 +14,30 @@ class LRHLS {
 
 public:
 
-    LRHLS(Track* in, Track* out);
+    LRHLS(Track* trackIn, Track* trackOut);
 
     ~LRHLS() {}
 
     void produce();
 
-public:
-
     void initFit();
-    uint1_t checkValidity();
-    void calcHelix();
-    void calcResiduals();
-    void killLargestResidual();
 
+    uint1_t checkValidity();
+
+public:
     Track* trackIn_;
     Track* trackOut_;
-    LRTrack LRParameter_;
 
-    LRStub stubs_[12];
+    array_t<LRStub> stubs_;
     LRStub stub_;
-    residData residuals_[12];
-    residData residual_;
-    uint4_t layerPopulation_[7];
-    stubData layerPos_[7];
-    uint3_t nLayers_;
+
+    uint3_t layerPopulation_[7]{};
+
     uint4_t nStubs_;
-    uint3_t nIterations_;
+    uint3_t nLayers_;
+    uint3_t nLayersPS_;
     uint1_t valid_;
+
 };
 
 }

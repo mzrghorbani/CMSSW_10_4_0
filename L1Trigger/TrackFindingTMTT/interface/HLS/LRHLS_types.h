@@ -12,6 +12,10 @@
 #include <ap_fixed.h>
 #include <cmath>
 
+#ifndef __SYNTHESIS__
+#include <iostream>
+#endif
+
 namespace TMTT {
 
 enum {
@@ -77,11 +81,11 @@ template<typename T>
 struct array_t {
 
     uint4_t size_;
-    T data_[10];
+    T data_[12];
 
     array_t() : size_(0) {}
 
-    void push_back(const T &value) { data_[++size_] = value; }
+    void push_back(const T &value) { data_[size_++] = value; }
 
     T &operator[](const int &idx) { return data_[idx]; }
 
@@ -96,6 +100,8 @@ struct array_t {
     const T *end() const { return &data_[size_]; }
 
     uint4_t size() const { return size_; }
+
+    void clear() { size_ = 0; }
 };
 
 struct LRStub {
@@ -104,10 +110,12 @@ struct LRStub {
     int14_t phi = 0;
     int14_t z = 0;
     uint4_t layerId = 0;
+    uint1_t psModule = 0;
+    uint1_t barrel = 0;
     uint1_t valid = 0;
 
     explicit LRStub(const int13_t &r = 0, const int13_t &phi = 0, const int13_t &z = 0, const int13_t &layerId = 0,
-                const int13_t &valid = 0) :
+                const uint1_t &psModule = 0, const uint1_t &barrel = 0, const int13_t &valid = 0) :
             r(r), phi(phi), z(z), layerId(layerId), valid(valid) {}
 
 };
@@ -324,3 +332,4 @@ struct residData {
 }
 
 #endif
+

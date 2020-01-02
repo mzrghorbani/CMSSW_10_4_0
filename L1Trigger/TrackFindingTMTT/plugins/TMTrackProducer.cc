@@ -40,14 +40,14 @@ TMTrackProducer::TMTrackProducer( const edm::ParameterSet& iConfig ) {
   converter_ = new Converter( settings_, data_, stubInputTag, tpInputTag, clusterTruthInputTag, genJetInputTag );
 
   // track reconstruction algorithm blocks
-  dtc_       = new DTC( settings_, data_ );
-  gp_        = new GP ( settings_, data_ );
-  ht_        = new HT ( settings_, data_ );
-  mht_       = new MHT( settings_, data_ );
-  lr_        = new LR ( settings_, data_ );
+  dtc_           = new DTC( settings_, data_ );
+  gp_            = new GP ( settings_, data_ );
+  ht_            = new HT ( settings_, data_ );
+  mht_           = new MHT( settings_, data_ );
+  lr_            = new LR ( settings_, data_ );
   lrhls_top_     = new LRHLS_top( settings_, data_ );
-  kf_        = new KF ( settings_, data_ );
-  dr_        = new DR ( settings_, data_ );
+  kf_            = new KF ( settings_, data_ );
+  dr_            = new DR ( settings_, data_ );
 
   // helper classes to analyse algorithms and to compare with f/w
   demo_   = new Demo  ( settings_, data_ );
