@@ -7,7 +7,7 @@ Created by Maziar Ghorbani - Brunel University on 12/06/19.
 namespace TMTT {
 
 
-LRHLS::LRHLS(Track* trackIn, Track* trackOut)
+LRHLS::LRHLS(Track *trackIn, Track *trackOut)
         : trackIn_(trackIn), trackOut_(trackOut), nStubs_(0), nLayers_(0), nLayersPS_(0), valid_(0) {
 
     LRStub stub;
@@ -33,9 +33,10 @@ void LRHLS::produce() {
     valid_ = checkValidity();
 
     if(not valid_) {
-        trackOut_ = trackIn_;
-        return;
+        trackIn_->valid_ = false;
     }
+
+    trackOut_ = trackIn_;
 
 }
 
@@ -111,11 +112,11 @@ void LRHLS::initFit() {
 
 uint1_t LRHLS::checkValidity() {
 
-    uint1_t valid = 0;
+    uint1_t valid = 1;
 
-    if(nLayers_ < 4)
+    if(nLayers_ < 6)
         valid = 0;
-    if(nLayersPS_ < 2)
+    if(nLayersPS_ < 4)
         valid = 0;
 
     return valid;

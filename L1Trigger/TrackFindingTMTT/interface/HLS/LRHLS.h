@@ -14,7 +14,7 @@ class LRHLS {
 
 public:
 
-    LRHLS(Track* trackIn, Track* trackOut);
+    LRHLS(Track *trackIn, Track *trackOut);
 
     ~LRHLS() {}
 
@@ -25,13 +25,13 @@ public:
     uint1_t checkValidity();
 
 public:
-    Track* trackIn_;
-    Track* trackOut_;
+    Track *trackIn_;
+    Track *trackOut_;
 
     array_t<LRStub> stubs_;
     LRStub stub_;
 
-    uint3_t layerPopulation_[7]{};
+    uint3_t layerPopulation_[7];
 
     uint4_t nStubs_;
     uint3_t nLayers_;

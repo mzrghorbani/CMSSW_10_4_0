@@ -62,22 +62,21 @@ TMTrackProducer::TMTrackProducer( const edm::ParameterSet& iConfig ) {
 
 }
 
+TMTrackProducer::~TMTrackProducer() {
 
-TMTrackProducer::~TMTrackProducer(){
-
-  delete settings_;
-  delete data_;
-  delete converter_;
-  delete dtc_;
-  delete gp_;
-  delete ht_;
-  delete mht_;
-  delete lr_;
-  delete lrhls_top_;
-  delete kf_;
-  delete dr_;
-  delete demo_;
-  delete histos_;
+//  delete settings_;
+//  delete data_;
+//  delete converter_;
+//  delete dtc_;
+//  delete gp_;
+//  delete ht_;
+//  delete mht_;
+//  delete lr_;
+//  delete lrhls_top_;
+//  delete kf_;
+//  delete dr_;
+//  delete demo_;
+//  delete histos_;
 
 }
 
@@ -139,7 +138,6 @@ void TMTrackProducer::endJob() {
   histos_->endJob();
 
 }
-
 
 DEFINE_FWK_MODULE( TMTrackProducer );
 

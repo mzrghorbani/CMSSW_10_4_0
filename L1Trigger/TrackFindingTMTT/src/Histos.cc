@@ -347,6 +347,7 @@ void Histos::fillLR() {
     int nTPs(0);
 
     nTracks = tracks.size();
+
     TPs tps;
     for (const Track *track : tracks) {
         nStubs += track->size();
@@ -388,12 +389,12 @@ void Histos::bookLRHLS() {
     profLRHLS_->GetXaxis()->SetBinLabel(3, "Tracks");
     profLRHLS_->GetXaxis()->SetBinLabel(4, "TPs");
 
-//    hisLRsize_ = inputDir.make<TH1F>("size", "Track: 'size'", 100, 0, 250);
-//    hisLRqOverPt_ = inputDir.make<TH1F>("qOverPt", "Track: 'q/Pt'", 36, -1./3., 1./3.);
-//    hisLRphi_ = inputDir.make<TH1F>("phi", "Track: 'phi'", 1000, -6, 6);
-//    hisLRz_ = inputDir.make<TH1F>("z", "Track: 'z'", 10000, -600, 600);
-//    hisLRcot_ = inputDir.make<TH1F>("cot", "Track: 'cot'", 1000, -6, 6);
-//    hisLRchi2_ = inputDir.make<TH1F>("chi2", "Track: 'chi2'", 1000, -3, 3);
+    hisLRsize_ = inputDir.make<TH1F>("size", "Track: 'size'", 100, 0, 250);
+    hisLRqOverPt_ = inputDir.make<TH1F>("qOverPt", "Track: 'q/Pt'", 36, -1./3., 1./3.);
+    hisLRphi_ = inputDir.make<TH1F>("phi", "Track: 'phi'", 1000, -6, 6);
+    hisLRz_ = inputDir.make<TH1F>("z", "Track: 'z'", 10000, -600, 600);
+    hisLRcot_ = inputDir.make<TH1F>("cot", "Track: 'cot'", 1000, -6, 6);
+    hisLRchi2_ = inputDir.make<TH1F>("chi2", "Track: 'chi2'", 1000, -3, 3);
 
 }
 
@@ -411,26 +412,25 @@ void Histos::fillLRHLS() {
     TPs tps;
     for (const Track *track_LR : tracks) {
         nStubs += (track_LR->size() + 1);
-//        hisLRsize_->Fill(track_LR->size());
-//        hisLRqOverPt_->Fill(track_LR->qOverPt());
-//        hisLRphi_->Fill(track_LR->phi());
-//        hisLRz_->Fill(track_LR->z());
-//        hisLRcot_->Fill(track_LR->cot());
-//        hisLRchi2_->Fill(track_LR->chi2());
+        hisLRsize_->Fill(track_LR->size());
+        hisLRqOverPt_->Fill(track_LR->qOverPt());
+        hisLRphi_->Fill(track_LR->phi());
+        hisLRz_->Fill(track_LR->z());
+        hisLRcot_->Fill(track_LR->cot());
+        hisLRchi2_->Fill(track_LR->chi2());
     }
 
-//    for (const Track *track_MHT : data_->tracksMHT()) {
-//        for (TP *tp : track_MHT->tps()) {
-//            if (tp->useForAlgEff()) {
-//                tps.push_back(tp);
-//            }
-//        }
-//    }
+    for (const Track *track_MHT : data_->tracksMHT()) {
+        for (TP *tp : track_MHT->tps()) {
+            if (tp->useForAlgEff()) {
+                tps.push_back(tp);
+            }
+        }
+    }
 
     sort(tps.begin(), tps.end());
     tps.erase(unique(tps.begin(), tps.end()), tps.end());
     nTPs = tps.size();
-
 
     cout << nStubs << " " << nGaps << " " << nTracks << " " << nTPs << endl;
     profLRHLS_->Fill(1, nStubs);

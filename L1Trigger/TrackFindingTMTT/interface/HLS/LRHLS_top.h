@@ -18,7 +18,7 @@ class LRHLS_top {
 
 public:
 
-    LRHLS_top(const Settings* settings, Data* data);
+    LRHLS_top(const Settings *settings, Data *data);
 
     ~LRHLS_top() {}
 
@@ -26,8 +26,8 @@ public:
 
 public:
 
-    const Settings* settings_;
-    Data* data_;
+    const Settings *settings_;
+    Data *data_;
 
 };
 
