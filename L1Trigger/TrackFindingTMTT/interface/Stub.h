@@ -55,6 +55,7 @@ public:
   int  moduleType()    const { return module_->modType();       }
 
   bool match( TP* tp ) const { return find( assocTPs_.begin(), assocTPs_.end(), tp ) != assocTPs_.end(); }
+  bool valid()         const { return valid_;       }
 
   void dtcStreamPos( const int& id, const int& pos ) { dtcStreamIds_.push_back( id ); dtcStreamPos_[ id ] = pos; }
   void gpStreamPos ( const int& id, const int& pos ) { gpStreamIds_ .push_back( id ); gpStreamPos_ [ id ] = pos; }
@@ -89,6 +90,7 @@ public:
 
   bool passDTC_;
   bool passFE_;
+  bool valid_;
 
   TPs assocTPs_;
 
