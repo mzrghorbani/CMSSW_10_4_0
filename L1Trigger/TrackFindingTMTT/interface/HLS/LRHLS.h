@@ -20,27 +20,29 @@ public:
 
     void produce();
     void initFit();
-    uint1_t checkValidity();
+    bool checkValidity();
     void calcHelix();
     void calcResidual();
-    void killResidual();
+    bool killLargestResidual();
+    void findLargestResidual();
     void create();
 
 public:
 
     Track *trackIn_;
     Track *trackOut_;
-    LRTrack LRParameter_;
-    residData residual_;
     array_t<LRStub> stubs_;
     array_t<residData> residuals_;
-    int layerPopulation_[7];
+    LRTrack HTParameter_;
+    LRTrack LRParameter_;
+    residData largestResid_;
     stubData layerPos_[7];
-    int nStubs_;
-    uint3_t nLayers_;
-    uint3_t nLayersPS_;
-    uint1_t valid_;
-
+    uint4_t layerPopulation_[7]{};
+    uint4_t nIterations_;
+    uint4_t nLayers_;
+    uint4_t nLayersPS_;
+    uint4_t nStubs_;
+    bool valid_;
 };
 
 }

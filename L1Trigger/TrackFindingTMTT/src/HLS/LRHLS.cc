@@ -8,54 +8,49 @@ namespace TMTT {
 
 
 LRHLS::LRHLS(Track *trackIn, Track *trackOut)
-        : trackIn_(trackIn), trackOut_(trackOut), nStubs_(0), nLayers_(0), nLayersPS_(0), valid_(0) {
+        : trackIn_(trackIn), trackOut_(trackOut), nIterations_(0),
+            nLayers_(0), nLayersPS_(0), nStubs_(0), valid_(false) {
 
-    uint4_t i;
+    HTParameter_.qOverPt = trackIn_->qOverPt();
+    HTParameter_.phiT = trackIn_->phi();
+    HTParameter_.cotTheta = trackIn_->cot();
+    HTParameter_.zT = trackIn_->z();
 
-    trackOut_ = trackIn_;
+    LRStub temp;
 
-    LRStub stub;
-
-    for(auto s : trackIn_->stubs()) {
-        stub.r = s->r();
-        stub.phi = s->phi();
-        stub.z = s->z();
-        stub.layerId = s->layerId();
-        stub.psModule = s->psModule();
-        stub.barrel = s->barrel();
-        stub.valid = 1;
-        stubs_.push_back(stub);
+    for (auto stub : trackIn_->stubs()) {
+        temp.r = stub->r();
+        temp.phi = stub->phi();
+        temp.z = stub->z();
+        temp.valid = 1;
+        temp.layerId = stub->layerId();
+        temp.psModule = stub->psModule();
+        temp.barrel = stub->barrel();
+        stubs_.push_back(temp);
     }
 
-    nStubs_ = int(stubs_.size());
+    nStubs_ = stubs_.size();
 }
 
 void LRHLS::produce() {
 
-    uint4_t i, j;
-
     initFit();
 
     valid_ = checkValidity();
-
-    if(valid_ == 0) {
+    if (not valid_) {
+        create();
         return;
     }
 
-    for(i = 0; i < 7; i++) {
-        if ((nStubs_ > 4) || (layerPopulation_[i] > 1)) {
-
-            calcHelix();
-            calcResidual();
-            killResidual();
+    while (nIterations_ < 10) {
+        nIterations_++;
+        calcHelix();
+        calcResidual();
+        const bool nothingToKill = killLargestResidual();
+        if (nothingToKill) {
+            break;
         }
     }
-
-    for(i = 0; i < 7; i++) {
-        cout << "  " << layerPopulation_[i];
-    }
-    cout << "        " << nStubs_;
-    cout << endl;
 
     create();
 }
@@ -67,79 +62,77 @@ void LRHLS::initFit() {
     uint3_t layers[7];
     uint3_t layersPS[7];
 
-    for(i = 0; i < 7; ++i) {
+    for (i = 0; i < 7; ++i) {
         layers[i] = 0;
         layersPS[i] = 0;
         layerPopulation_[i] = 0;
     }
 
-    for(auto stub : stubs_) {
+    for (auto stub : stubs_) {
 
         if (stub.valid) {
             switch (stub.layerId) {
                 case 1:
                     layerPopulation_[1]++;
                     layers[1]++;
-                    if(stub.psModule)
+                    if (stub.psModule)
                         layersPS[1]++;
                     break;
                 case 2:
                     layerPopulation_[2]++;
                     layers[2]++;
-                    if(stub.psModule)
+                    if (stub.psModule)
                         layersPS[2]++;
                     break;
                 case 3:
                     layerPopulation_[3]++;
                     layers[3]++;
-                    if(stub.psModule)
+                    if (stub.psModule)
                         layersPS[3]++;
                     break;
                 case 4:
                     layerPopulation_[4]++;
                     layers[4]++;
-                    if(stub.psModule)
+                    if (stub.psModule)
                         layersPS[4]++;
                     break;
                 case 5:
                     layerPopulation_[5]++;
                     layers[5]++;
-                    if(stub.psModule)
+                    if (stub.psModule)
                         layersPS[5]++;
                     break;
                 case 6:
                     layerPopulation_[6]++;
                     layers[6]++;
-                    if(stub.psModule)
+                    if (stub.psModule)
                         layersPS[6]++;
                     break;
                 default:
                     layerPopulation_[0]++;
                     layers[0]++;
-                    if(stub.psModule)
+                    if (stub.psModule)
                         layersPS[0]++;
             }
         }
     }
 
-    for(i = 0; i < 7; ++i) {
-        if(layers[i])
+    for (i = 0; i < 7; ++i) {
+        if (layers[i])
             nLayers_ += 1;
-        if(layersPS[i])
+        if (layersPS[i])
             nLayersPS_ += 1;
     }
 }
 
-uint1_t LRHLS::checkValidity() {
+bool LRHLS::checkValidity() {
 
-    uint1_t valid = 1;
+    bool valid = true;
 
-    if(nStubs_ < 3)
-        valid = 0;
-    if(nLayers_ < 4)
-        valid = 0;
-    if(nLayersPS_ < 2)
-        valid = 0;
+    if (nLayers_ < 4)
+        valid = false;
+    if (nLayersPS_ < 2)
+        valid = false;
 
     return valid;
 }
@@ -169,21 +162,21 @@ void LRHLS::calcHelix() {
         layerMaxPos[i].Z = -4096;
     }
 
-    uint1_t ps[7];
+    bool ps[7];
 
-    for(i = 0; i < 7; i++) {
-        ps[i] = 0;
+    for (i = 0; i < 7; i++) {
+        ps[i] = false;
     }
 
-    for(auto stub : stubs_) {
+    for (auto stub : stubs_) {
 
-        if(stub.valid) {
+        if (stub.valid) {
             stubData pos(stub.r, stub.phi, stub.r, stub.z);
 
             switch (stub.layerId) {
                 case 1:
-                    if(stub.psModule) {
-                        ps[1] = 1;
+                    if (stub.psModule) {
+                        ps[1] = true;
                         layerMinPos[1] <= pos;
                         layerMaxPos[1] >= pos;
                     } else {
@@ -197,8 +190,8 @@ void LRHLS::calcHelix() {
                     break;
 
                 case 2:
-                    if(stub.psModule) {
-                        ps[2] = 1;
+                    if (stub.psModule) {
+                        ps[2] = true;
                         layerMinPos[2] <= pos;
                         layerMaxPos[2] >= pos;
                     } else {
@@ -212,8 +205,8 @@ void LRHLS::calcHelix() {
                     break;
 
                 case 3:
-                    if(stub.psModule) {
-                        ps[3] = 1;
+                    if (stub.psModule) {
+                        ps[3] = true;
                         layerMinPos[3] <= pos;
                         layerMaxPos[3] >= pos;
                     } else {
@@ -227,8 +220,8 @@ void LRHLS::calcHelix() {
                     break;
 
                 case 4:
-                    if(stub.psModule) {
-                        ps[4] = 1;
+                    if (stub.psModule) {
+                        ps[4] = true;
                         layerMinPos[4] <= pos;
                         layerMaxPos[4] >= pos;
                     } else {
@@ -242,8 +235,8 @@ void LRHLS::calcHelix() {
                     break;
 
                 case 5:
-                    if(stub.psModule) {
-                        ps[5] = 1;
+                    if (stub.psModule) {
+                        ps[5] = true;
                         layerMinPos[5] <= pos;
                         layerMaxPos[5] >= pos;
                     } else {
@@ -257,8 +250,8 @@ void LRHLS::calcHelix() {
                     break;
 
                 case 6:
-                    if(stub.psModule) {
-                        ps[6] = 1;
+                    if (stub.psModule) {
+                        ps[6] = true;
                         layerMinPos[6] <= pos;
                         layerMaxPos[6] >= pos;
                     } else {
@@ -272,8 +265,8 @@ void LRHLS::calcHelix() {
                     break;
 
                 default:
-                    if(stub.psModule) {
-                        ps[0] = 1;
+                    if (stub.psModule) {
+                        ps[0] = true;
                         layerMinPos[0] <= pos;
                         layerMaxPos[0] >= pos;
                     } else {
@@ -288,10 +281,10 @@ void LRHLS::calcHelix() {
             }
         }
     }
-    for(i = 0; i < 7; i++) {
-        if(layerPopulation_[i] > 0) {
+    for (i = 0; i < 7; i++) {
+        if (layerPopulation_[i] > 0) {
             phiSums += make_pair_t(layerPos_[i].RPhi, layerPos_[i].Phi);
-            if(ps[i] == 1)
+            if (ps[i] == 1)
                 zSums += make_pair_t(layerPos_[i].RZ, layerPos_[i].Z);
         }
     }
@@ -300,7 +293,6 @@ void LRHLS::calcHelix() {
     const pair_t<dtf_t, dtf_t> &zParameter = zSums.calcLinearParameter();
 
     LRParameter_ = LRTrack(phiParameter.first, phiParameter.second, zParameter.first, zParameter.second);
-
 }
 
 void LRHLS::calcResidual() {
@@ -308,97 +300,115 @@ void LRHLS::calcResidual() {
     uint4_t i;
     uint4_t j;
 
-    dtf_t phiPredicted[7];
-    dtf_t zPredicted[7];
+    dtf_t phiResid[7];
+    dtf_t zResid[7];
 
     for (i = 0; i < 7; ++i) {
-        phiPredicted[i] = 0;
-        zPredicted[i] = 0;
+        phiResid[i] = 0;
+        zResid[i] = 0;
     }
 
     for (i = 0; i < 7; i++) {
         if (layerPopulation_[i] > 0) {
-            phiPredicted[i] = dtf_t(LRParameter_.phiT + dtf_t(LRParameter_.qOverPt * layerPos_[i].Phi));
-            zPredicted[i] = dtf_t(LRParameter_.zT + dtf_t(LRParameter_.cotTheta * layerPos_[i].Z));
+            phiResid[i] = dtf_t(LRParameter_.phiT + dtf_t(LRParameter_.qOverPt * layerPos_[i].Phi));
+            zResid[i] = dtf_t(LRParameter_.zT + dtf_t(LRParameter_.cotTheta * layerPos_[i].Z));
         }
     }
 
-    for(i = 0; i < residuals_.size(); i++) {
-        residuals_[i].phi = 0;
-        residuals_[i].z = 0;
-        residuals_[i].layerId = 0;
-        residuals_[i].stubId = 0;
-        residuals_[i].valid = 0;
-    }
+    residuals_.clear();
+    residData residual;
 
-    for(i = 0; i < stubs_.size(); i++) {
-
+    for (i = 0; i < stubs_.size(); i++) {
         if (stubs_[i].valid) {
+
             for (j = 0; j < 7; j++) {
                 if (stubs_[i].layerId == j) {
-                    residual_.phi = abs_t(stubs_[i].phi - phiPredicted[j]);
-                    residual_.z = abs_t(stubs_[i].z - zPredicted[j]);
-                    residual_.layerId = j;
-                    residual_.stubId = i;
-                    residual_.valid = stubs_[i].valid;
-                    residuals_.push_back(residual_);
+
+                    residual.phi = abs_t(stubs_[i].phi - phiResid[j]);
+                    residual.z = abs_t(stubs_[i].z - zResid[j]);
+                    residual.layerId = j;
+                    residual.stubId = i;
+                    if (stubs_[i].psModule)
+                        residual.ps = 1;
+                    residual.valid = stubs_[i].valid;
+                    residuals_.push_back(residual);
                     break;
                 }
             }
         }
     }
+}
 
-    residual_.phi = 0;
-    residual_.z = 0;
-    residual_.layerId = 0;
-    residual_.stubId = 0;
+bool LRHLS::killLargestResidual() {
 
-    dtf_t residComb = 0;
-    dtf_t largest = 0;
+    findLargestResidual();
 
-    for (auto residual : residuals_) {
+    if(nStubs_ <= 3) {
+        return true;
+    }
 
-        if(residual.valid) {
+    stubs_[largestResid_.stubId].valid = false;
+    layerPopulation_[largestResid_.layerId]--;
+    nStubs_--;
 
-            residComb = residual.combined();
-            largest = residual_.combined();
+    return false;
+}
 
-            if (residComb > largest) {
-                residual_ = residual;
+void LRHLS::findLargestResidual() {
+    
+    uint4_t i;
+
+    largestResid_.phi = 0;
+    largestResid_.z = 0;
+    largestResid_.layerId = 0;
+    largestResid_.stubId = 0;
+    largestResid_.valid = 0;
+    largestResid_.ps = 0;
+
+    for(i = 0; i < 7; i++) {
+        if(layerPopulation_[i] == 0)
+            continue;
+        uint1_t single = layerPopulation_[i] == 1;
+        uint1_t notPurged = nStubs_ != nLayers_;
+        uint1_t layerCritical = nLayers_ == 4;
+        uint1_t psCritical = nLayers_ == 2;
+        uint1_t critical = nStubs_ == 4;
+        if(single && notPurged && layerCritical)
+            continue;
+        for(auto residual : residuals_) {
+            if (residual.ps && psCritical && !critical) {
+                if ((nStubs_ == 2) || single) {
+                    continue;
+                }
+            }
+            if(residual.combined() > largestResid_.combined()) {
+                largestResid_ = residual;
             }
         }
     }
-
-}
-
-void LRHLS::killResidual() {
-
-    stubs_[residual_.stubId].valid = 0;
-    layerPopulation_[residual_.layerId]--;
-    nStubs_--;
-
 }
 
 void LRHLS::create() {
 
-    uint4_t i;
+    trackOut_ = trackIn_;
 
     trackOut_->qOverPt_ = LRParameter_.qOverPt;
     trackOut_->phi_ = LRParameter_.phiT;
     trackOut_->cot_ = LRParameter_.cotTheta;
     trackOut_->z_ = LRParameter_.zT;
 
-    for(i = 0; i < stubs_.size(); i++) {
-        trackOut_->stubs_[i]->r_ = stubs_[i].r;
-        trackOut_->stubs_[i]->phi_ = stubs_[i].phi;
-        trackOut_->stubs_[i]->z_ = stubs_[i].z;
-        trackOut_->stubs_[i]->valid_ = stubs_[i].valid;
-        trackOut_->stubs_[i]->module_->layerId_ = stubs_[i].layerId;
-        trackOut_->stubs_[i]->module_->psModule_ = stubs_[i].psModule;
-        trackOut_->stubs_[i]->module_->barrel_ = stubs_[i].barrel;
+    uint4_t i = 0;
+
+    for (auto stub : stubs_) {
+        trackOut_->stubs_[i]->r_ = stub.r;
+        trackOut_->stubs_[i]->phi_ = stub.phi;
+        trackOut_->stubs_[i]->z_ = stub.z;
+        trackOut_->stubs_[i]->valid_ = stub.valid;
+        trackOut_->stubs_[i]->module_->layerId_ = stub.layerId;
+        trackOut_->stubs_[i]->module_->psModule_ = stub.psModule;
+        trackOut_->stubs_[i]->module_->barrel_ = stub.barrel;
+        i++;
     }
-
 }
-
 
 }

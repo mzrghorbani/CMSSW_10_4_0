@@ -84,23 +84,14 @@ struct array_t {
     T data_[12];
 
     array_t() : size_(0) {}
-
     void push_back(const T &value) { data_[size_++] = value; }
-
     T &operator[](const int &idx) { return data_[idx]; }
-
     const T &operator[](const int &idx) const { return data_[idx]; }
-
     T *begin() { return &data_[0]; }
-
     const T *begin() const { return &data_[0]; }
-
     T *end() { return &data_[size_]; }
-
     const T *end() const { return &data_[size_]; }
-
     uint4_t size() const { return size_; }
-
     void clear() { size_ = 0; }
 };
 
@@ -211,6 +202,7 @@ struct residData {
     dtf_t z = 0;
     uint3_t layerId = 0;
     uint4_t stubId = 0;
+    uint1_t ps = 0;
     uint1_t valid = 0;
 
     explicit residData(const dtf_t &phi = 0, const dtf_t &z = 0, const uint3_t &layerId = 0,
